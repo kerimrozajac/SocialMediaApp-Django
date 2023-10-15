@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount",  # new
     "dj_rest_auth",
     "dj_rest_auth.registration",  # new
+    "phonenumbers",
+    "corsheaders",
     # Local
     "accounts.apps.AccountsConfig",  # new
-    "corsheaders",
+
 ]
 
 MIDDLEWARE = [
