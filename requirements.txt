@@ -5,3 +5,4 @@ sqlparse==0.4.3
 djangorestframework
 dj-rest-auth
 django-allauth
+django-cors-headers
