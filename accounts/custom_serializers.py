@@ -1,27 +1,30 @@
 # custom_serializers.py
+import phonenumbers
+import time
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers  # Import the serializers module from Django REST framework
-import phonenumbers
+
+from .models import CustomUser
+
+
+def create_unique_username():
+    # Generate a unique username using a timestamp (you can use a different method)
+    return f"user_{int(time.time())}"
 
 
 class CustomRegisterSerializer(RegisterSerializer):
     phone_number = serializers.CharField(required=True)
-    password2 = serializers.CharField(required=False)
-    username = serializers.CharField(required=False)
-    email = serializers.EmailField(required=False)
+    #password2 = serializers.CharField(required=False)
+    password2 = None
+    username = None
+    email = None
+    name = None
 
-    def validate(self, data):
-        password1 = data.get('password1')
-        password2 = data.get('password2')
 
-        if password1 != password2:
-            raise serializers.ValidationError("Passwords do not match")
-
-        # Implement any other custom validation logic here
-
-        return data
-
-    def validate_mobile_number(self, value):
+    def validate_phone_number(self, value):
+        """
+        Custom validation for the phone number field.
+        """
         try:
             parsed_number = phonenumbers.parse(value, None)
             if not phonenumbers.is_valid_number(parsed_number):
@@ -30,3 +33,22 @@ class CustomRegisterSerializer(RegisterSerializer):
             return formatted_number
         except Exception:
             raise serializers.ValidationError("Invalid mobile number format")
+
+    def custom_signup(self, request, user):
+        user.phone_number = self.validated_data.get('phone_number')
+        #user.username = self.generate_unique_username(user.phone_number)
+        user.set_password(self.validated_data.get('password'))
+        user.save()
+
+    def validate(self, data):
+
+        # Check if a user with the same phone number already exists
+        phone_number = data.get("phone_number")
+        if CustomUser.objects.filter(phone_number=phone_number).exists():
+            raise serializers.ValidationError("User with this phone number already exists.")
+
+        # Create a unique username
+        data['username'] = create_unique_username()
+
+        return data
+
