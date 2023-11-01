@@ -58,23 +58,27 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 
 class CustomLoginSerializer(LoginSerializer):
-    login = serializers.CharField()
+    phone_number = serializers.CharField()
     password = serializers.CharField(style={'input_type': 'password'})
     username = None
     email = None
 
-    def validate_login(self, value):
-        user = None
-        if '@' in value:
-            user = User.objects.filter(email=value).first()
-        elif re.match(r'^\+\d+$', value):
-            user = User.objects.filter(phone_number=value).first()
+    def validate(self, data):
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+
+        if phone_number and password:
+            user = User.objects.filter(phone_number=phone_number).first()
+
+            if user:
+                if user.check_password(password):
+                    if not user.is_active:
+                        raise serializers.ValidationError("User is not active.")
+                else:
+                    raise serializers.ValidationError("Incorrect password.")
+            else:
+                raise serializers.ValidationError("User does not exist.")
         else:
-            user = User.objects.filter(username=value).first()
+            raise serializers.ValidationError("Must include 'phone_number' and 'password'.")
 
-        if user:
-            self.user = user
-            return value
-        raise serializers.ValidationError("User does not exist.")
-
-
+        return data

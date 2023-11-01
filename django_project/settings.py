@@ -148,6 +148,7 @@ REST_FRAMEWORK = {  # new
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.TokenAuthentication",  # new
+        "accounts.custom_serializers.CustomLoginSerializer",
     ],
 }
 
