@@ -9,5 +9,4 @@ class CustomRegisterView(RegisterView):
 
 
 class CustomLoginView(LoginView):
-    #authentication_classes = ['app_name.backends.PhoneBackend', ]
     serializer_class = CustomLoginSerializer
